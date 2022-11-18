@@ -3,19 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package salesnvoicegenerator.model;
+package salesinvoicegenerator.view;
 
 /**
  *
  * @author Hager.Ahmed
  */
-public class InvoiceLine {
+public class LineDialog {
     
-private Invoice invoice;
-private String itemName;
-private int itemPrice;
-private int count;
-
-
-
 }
