@@ -1,43 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package salesinvoicegenerator.controller;
 
 import salesinvoicegenerator.view.SalesInvoiceGeneratorFrame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import java.text.ParseException;
 import java.io.IOException;
 import javax.swing.filechooser.FileFilter;
 import salesinvoicegenerator.model.Invoice;
 import salesinvoicegenerator.model.InvoiceLine;
 import salesinvoicegenerator.model.InvoiceDataTable;
-import javax.swing.JTable;
 import salesinvoicegenerator.view.InvoiceDialog;
-import salesinvoicegenerator.view.LineDialog;
+import salesinvoicegenerator.view.InvoiceLineDialog;
 import salesinvoicegenerator.model.InvoiceLineDataTable;
 
 /**
@@ -48,7 +31,7 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
 
     private SalesInvoiceGeneratorFrame salesInvoiceGeneratorFrame;
     private InvoiceDialog invoiceDialog;
-    private LineDialog invoiceLineDialog;
+    private InvoiceLineDialog invoiceLineDialog;
 
     public SalesInvoiceGeneratorController(SalesInvoiceGeneratorFrame salesInvoiceGeneratorFrame) {
         this.salesInvoiceGeneratorFrame = salesInvoiceGeneratorFrame;
@@ -71,11 +54,11 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                 createNewInoice();
                 break;
 
-            case "createInvoiceOK":
-                createInvoiceOK();
+            case "addInvoiceRecord":
+                addInvoiceRecord();
                 break;
-            case "createInvoiceCancel":
-                createInvoiceCancel();
+            case "cancelAddedInvoice":
+                cancelAddedInvoice();
                 break;
             case "Delete Invoice":
                 deleteInvoice();
@@ -89,11 +72,11 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                 cancel();
                 break;
 
-            case "createLineOK":
-                createLineOK();
+            case "addNewLineRecord":
+                addNewLineRecord();
 
-            case "createLineCancel":
-                createLineCancel();
+            case "cancelAddedLine":
+                cancelAddedLine();
                 break;
 
         }
@@ -134,7 +117,7 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                         arrayOfInvoices.add(invoice);
                     } catch (Exception ex) {
                         ex.printStackTrace();
-                        JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Format Error, Please upload the correct format", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Please upload the correct format", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
 
@@ -163,7 +146,7 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                             invoiceInLine.getLines().add(invoiceLine);
                         } catch (Exception ex) {
                             ex.printStackTrace();
-                            JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Format Error, Please upload the correct format", "Error", JOptionPane.ERROR_MESSAGE);
+                           JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Please upload the correct format", "Error", JOptionPane.ERROR_MESSAGE);
                         }
                     }
 
@@ -174,14 +157,10 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                 salesInvoiceGeneratorFrame.getInvoicesTable().setModel(invoiceDateTabel);
                 salesInvoiceGeneratorFrame.getInvoiceDataTable().fireTableDataChanged();
 
-                //InvoicesTableModel invoicesTableModel = new InvoicesTableModel(invoicesArray);
-                /*salesInvoiceGeneratorFrame.setInvoicesTableModel(invoicesTableModel);
-                salesInvoiceGeneratorFrame.getInvoiceTable().setModel(invoicesTableModel);
-                salesInvoiceGeneratorFrame.getInvoicesTableModel().fireTableDataChanged();*/
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-            // JOptionPane.showMessageDialog(frame, "Cannot read file", "Error", JOptionPane.ERROR_MESSAGE);
+             JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Please upload the correct format", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -189,22 +168,23 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
         invoiceDialog = new InvoiceDialog(salesInvoiceGeneratorFrame);
         invoiceDialog.setVisible(true);
     }
-    private void createInvoiceOK() {
-        String date = invoiceDialog.getInvDateField().getText();
-        String customer = invoiceDialog.getCustNameField().getText();
-        int num = salesInvoiceGeneratorFrame.getNextInvoiceNum();
+
+    private void addInvoiceRecord() {
+        String invoiceDate = invoiceDialog.getInvDateField().getText();
+        String customerName = invoiceDialog.getCustNameField().getText();
+        int invoiceNumber = salesInvoiceGeneratorFrame.nextInvoiceIndex();
         try {
-            String[] dateParts = date.split("-");  // "22-05-2013" -> {"22", "05", "2013"}  xy-qw-20ij
-            if (dateParts.length < 3) {
-                JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Wrong date format", "Error", JOptionPane.ERROR_MESSAGE);
+            String[] partsOfDate = invoiceDate.split("-");
+            if (partsOfDate.length < 3) {
+                JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Date is in wrong format , please enter the date as the following: DD-MM-YY", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                int day = Integer.parseInt(dateParts[0]);
-                int month = Integer.parseInt(dateParts[1]);
-                int year = Integer.parseInt(dateParts[2]);
+                int day = Integer.parseInt(partsOfDate[0]);
+                int month = Integer.parseInt(partsOfDate[1]);
+                int year = Integer.parseInt(partsOfDate[2]);
                 if (day > 31 || month > 12) {
-                    JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Wrong date format", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Date is in wrong format , please enter the date as the following: DD-MM-YY", "Error", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    Invoice invoice = new Invoice(num, date, customer);
+                    Invoice invoice = new Invoice(invoiceNumber, invoiceDate, customerName);
                     salesInvoiceGeneratorFrame.getInvoices().add(invoice);
                     salesInvoiceGeneratorFrame.getInvoiceDataTable().fireTableDataChanged();
                     invoiceDialog.setVisible(false);
@@ -213,15 +193,15 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                 }
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Wrong date format", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Date is in wrong format , please enter the date as the following: DD-MM-YY", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-  private void createInvoiceCancel() {
+
+    private void cancelAddedInvoice() {
         invoiceDialog.setVisible(false);
         invoiceDialog.dispose();
         invoiceDialog = null;
     }
-
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
@@ -240,16 +220,16 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
     }
 
     private void saveFile() {
-           ArrayList<Invoice> invoices = salesInvoiceGeneratorFrame.getInvoices();
-        String headers = "";
+        ArrayList<Invoice> invoices = salesInvoiceGeneratorFrame.getInvoices();
+        String invoiceHeaders = "";
         String lines = "";
         for (Invoice invoice : invoices) {
-            String invCSV = invoice.getAsCSV();
-            headers += invCSV;
-            headers += "\n";
+            String invCSV = invoice.getCSVFormat();
+            invoiceHeaders += invCSV;
+            invoiceHeaders += "\n";
 
             for (InvoiceLine line : invoice.getLines()) {
-                String lineCSV = line.getAsCSV();
+                String lineCSV = line.getCSVFormat();
                 lines += lineCSV;
                 lines += "\n";
             }
@@ -261,7 +241,7 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
             if (result == JFileChooser.APPROVE_OPTION) {
                 File headerFile = fc.getSelectedFile();
                 FileWriter hfw = new FileWriter(headerFile);
-                hfw.write(headers);
+                hfw.write(invoiceHeaders);
                 hfw.flush();
                 hfw.close();
                 result = fc.showSaveDialog(salesInvoiceGeneratorFrame);
@@ -290,10 +270,10 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
 
     //create new item
     private void save() {
-      invoiceLineDialog = new LineDialog(salesInvoiceGeneratorFrame);
+        invoiceLineDialog = new InvoiceLineDialog(salesInvoiceGeneratorFrame);
         invoiceLineDialog.setVisible(true);
     }
-//delete  Item
+
     private void cancel() {
         int itemToBeDelaeted = salesInvoiceGeneratorFrame.getIvoiceLinesTable().getSelectedRow();
 
@@ -305,26 +285,21 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
         }
     }
 
-    private void createLineCancel() {
-         invoiceLineDialog.setVisible(false);
-        invoiceLineDialog.dispose();
-        invoiceLineDialog = null;
+   
 
-    }
-
-    private void createLineOK() {
-   String item = invoiceLineDialog.getItemNameField().getText();
-        String countStr = invoiceLineDialog.getItemCountField().getText();
-        String priceStr = invoiceLineDialog.getItemPriceField().getText();
-        int count = Integer.parseInt(countStr);
-        double price = Double.parseDouble(priceStr);
+    private void addNewLineRecord() {
+        String item = invoiceLineDialog.getItemNameField().getText();
+        String countString = invoiceLineDialog.getItemCountField().getText();
+        String priceString = invoiceLineDialog.getItemPriceField().getText();
+        int count = Integer.parseInt(countString);
+        double price = Double.parseDouble(priceString);
         int selectedInvoice = salesInvoiceGeneratorFrame.getInvoicesTable().getSelectedRow();
         if (selectedInvoice != -1) {
             Invoice invoice = salesInvoiceGeneratorFrame.getInvoices().get(selectedInvoice);
-            InvoiceLine line = new InvoiceLine (invoice ,item, price, count);
+            InvoiceLine line = new InvoiceLine(invoice, item, price, count);
             invoice.getLines().add(line);
             InvoiceLineDataTable invoiceLineDataTable = (InvoiceLineDataTable) salesInvoiceGeneratorFrame.getIvoiceLinesTable().getModel();
-            //linesTableModel.getLines().add(line);
+
             invoiceLineDataTable.fireTableDataChanged();
             salesInvoiceGeneratorFrame.getInvoiceDataTable().fireTableDataChanged();
         }
@@ -332,7 +307,11 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
         invoiceLineDialog.dispose();
         invoiceLineDialog = null;
     }
+     private void cancelAddedLine() {
+        invoiceLineDialog.setVisible(false);
+        invoiceLineDialog.dispose();
+        invoiceLineDialog = null;
 
-    
-  
+    }
+
 }
