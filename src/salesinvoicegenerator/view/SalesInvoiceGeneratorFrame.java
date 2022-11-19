@@ -270,7 +270,11 @@ private ArrayList<Invoice> invoices;
 private InvoiceDataTable invoiceDataTable;
 
     public InvoiceDataTable getInvoiceDataTable() {
+        if (invoiceDataTable == null) {
+            invoiceDataTable = new InvoiceDataTable(getInvoices());
+        }
         return invoiceDataTable;
+      //  return invoiceDataTable;
     }
 
     public void setInvoiceDataTable(InvoiceDataTable invoiceDataTable) {
@@ -309,6 +313,16 @@ private InvoiceDataTable invoiceDataTable;
 
     public void setInvoices(ArrayList<Invoice> invoices) {
         this.invoices = invoices;
+    }
+     public int getNextInvoiceNum() {
+        int num = 0;
+        
+        for (Invoice invoice : getInvoices()) {
+            if (invoice.getInvoiceNumber()> num) 
+                num = invoice.getInvoiceNumber();
+        }
+        
+        return ++num;
     }
  public SalesInvoiceGeneratorController getSalesInvoiceGeneratorController() {
         return salesInvoiceGeneratorController;

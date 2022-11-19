@@ -5,7 +5,6 @@
  */
 package salesinvoicegenerator.controller;
 
-
 import salesinvoicegenerator.view.SalesInvoiceGeneratorFrame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -71,9 +70,12 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
             case "Create New Inoice":
                 createNewInoice();
                 break;
+
             case "createInvoiceOK":
+                createInvoiceOK();
                 break;
             case "createInvoiceCancel":
+                createInvoiceCancel();
                 break;
             case "Delete Invoice":
                 deleteInvoice();
@@ -86,15 +88,14 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
             case "Cancel":
                 cancel();
                 break;
-                
+
             case "createLineOK":
                 createLineOK();
-                
+
             case "createLineCancel":
-            createLineCancel();
-            break;
-            
-           
+                createLineCancel();
+                break;
+
         }
 
     }
@@ -183,11 +184,44 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
             // JOptionPane.showMessageDialog(frame, "Cannot read file", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     private void createNewInoice() {
-      invoiceDialog = new InvoiceDialog(salesInvoiceGeneratorFrame);
+        invoiceDialog = new InvoiceDialog(salesInvoiceGeneratorFrame);
         invoiceDialog.setVisible(true);
     }
+    private void createInvoiceOK() {
+        String date = invoiceDialog.getInvDateField().getText();
+        String customer = invoiceDialog.getCustNameField().getText();
+        int num = salesInvoiceGeneratorFrame.getNextInvoiceNum();
+        try {
+            String[] dateParts = date.split("-");  // "22-05-2013" -> {"22", "05", "2013"}  xy-qw-20ij
+            if (dateParts.length < 3) {
+                JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Wrong date format", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                int day = Integer.parseInt(dateParts[0]);
+                int month = Integer.parseInt(dateParts[1]);
+                int year = Integer.parseInt(dateParts[2]);
+                if (day > 31 || month > 12) {
+                    JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Wrong date format", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    Invoice invoice = new Invoice(num, date, customer);
+                    salesInvoiceGeneratorFrame.getInvoices().add(invoice);
+                    salesInvoiceGeneratorFrame.getInvoiceDataTable().fireTableDataChanged();
+                    invoiceDialog.setVisible(false);
+                    invoiceDialog.dispose();
+                    invoiceDialog = null;
+                }
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(salesInvoiceGeneratorFrame, "Wrong date format", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+  private void createInvoiceCancel() {
+        invoiceDialog.setVisible(false);
+        invoiceDialog.dispose();
+        invoiceDialog = null;
+    }
+
 
     @Override
     public void valueChanged(ListSelectionEvent e) {
@@ -206,9 +240,43 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
     }
 
     private void saveFile() {
-    }
+           ArrayList<Invoice> invoices = salesInvoiceGeneratorFrame.getInvoices();
+        String headers = "";
+        String lines = "";
+        for (Invoice invoice : invoices) {
+            String invCSV = invoice.getAsCSV();
+            headers += invCSV;
+            headers += "\n";
 
-    
+            for (InvoiceLine line : invoice.getLines()) {
+                String lineCSV = line.getAsCSV();
+                lines += lineCSV;
+                lines += "\n";
+            }
+        }
+        System.out.println("Check point");
+        try {
+            JFileChooser fc = new JFileChooser();
+            int result = fc.showSaveDialog(salesInvoiceGeneratorFrame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File headerFile = fc.getSelectedFile();
+                FileWriter hfw = new FileWriter(headerFile);
+                hfw.write(headers);
+                hfw.flush();
+                hfw.close();
+                result = fc.showSaveDialog(salesInvoiceGeneratorFrame);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File lineFile = fc.getSelectedFile();
+                    FileWriter lfw = new FileWriter(lineFile);
+                    lfw.write(lines);
+                    lfw.flush();
+                    lfw.close();
+                }
+            }
+        } catch (Exception ex) {
+
+        }
+    }
 
     private void deleteInvoice() {
 
@@ -220,10 +288,12 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
 
     }
 
+    //create new item
     private void save() {
-
+      invoiceLineDialog = new LineDialog(salesInvoiceGeneratorFrame);
+        invoiceLineDialog.setVisible(true);
     }
-
+//delete  Item
     private void cancel() {
         int itemToBeDelaeted = salesInvoiceGeneratorFrame.getIvoiceLinesTable().getSelectedRow();
 
@@ -236,11 +306,33 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
     }
 
     private void createLineCancel() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+         invoiceLineDialog.setVisible(false);
+        invoiceLineDialog.dispose();
+        invoiceLineDialog = null;
+
     }
 
     private void createLineOK() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+   String item = invoiceLineDialog.getItemNameField().getText();
+        String countStr = invoiceLineDialog.getItemCountField().getText();
+        String priceStr = invoiceLineDialog.getItemPriceField().getText();
+        int count = Integer.parseInt(countStr);
+        double price = Double.parseDouble(priceStr);
+        int selectedInvoice = salesInvoiceGeneratorFrame.getInvoicesTable().getSelectedRow();
+        if (selectedInvoice != -1) {
+            Invoice invoice = salesInvoiceGeneratorFrame.getInvoices().get(selectedInvoice);
+            InvoiceLine line = new InvoiceLine (invoice ,item, price, count);
+            invoice.getLines().add(line);
+            InvoiceLineDataTable invoiceLineDataTable = (InvoiceLineDataTable) salesInvoiceGeneratorFrame.getIvoiceLinesTable().getModel();
+            //linesTableModel.getLines().add(line);
+            invoiceLineDataTable.fireTableDataChanged();
+            salesInvoiceGeneratorFrame.getInvoiceDataTable().fireTableDataChanged();
+        }
+        invoiceLineDialog.setVisible(false);
+        invoiceLineDialog.dispose();
+        invoiceLineDialog = null;
     }
 
+    
+  
 }
