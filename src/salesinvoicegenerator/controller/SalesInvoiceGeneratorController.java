@@ -19,8 +19,8 @@ import javax.swing.filechooser.FileFilter;
 import salesinvoicegenerator.model.Invoice;
 import salesinvoicegenerator.model.InvoiceLine;
 import salesinvoicegenerator.model.InvoiceDataTable;
-import salesinvoicegenerator.view.InvoiceDialog;
-import salesinvoicegenerator.view.InvoiceLineDialog;
+import salesinvoicegenerator.view.AddInvoiceDialog;
+import salesinvoicegenerator.view.AddInvoiceLineDialog;
 import salesinvoicegenerator.model.InvoiceLineDataTable;
 
 /**
@@ -30,8 +30,8 @@ import salesinvoicegenerator.model.InvoiceLineDataTable;
 public class SalesInvoiceGeneratorController implements ActionListener, ListSelectionListener {
 
     private SalesInvoiceGeneratorFrame salesInvoiceGeneratorFrame;
-    private InvoiceDialog invoiceDialog;
-    private InvoiceLineDialog invoiceLineDialog;
+    private AddInvoiceDialog invoiceDialog;
+    private AddInvoiceLineDialog invoiceLineDialog;
 
     public SalesInvoiceGeneratorController(SalesInvoiceGeneratorFrame salesInvoiceGeneratorFrame) {
         this.salesInvoiceGeneratorFrame = salesInvoiceGeneratorFrame;
@@ -165,7 +165,7 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
     }
 
     private void createNewInoice() {
-        invoiceDialog = new InvoiceDialog(salesInvoiceGeneratorFrame);
+        invoiceDialog = new AddInvoiceDialog(salesInvoiceGeneratorFrame);
         invoiceDialog.setVisible(true);
     }
 
@@ -270,7 +270,7 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
 
     //create new item
     private void save() {
-        invoiceLineDialog = new InvoiceLineDialog(salesInvoiceGeneratorFrame);
+        invoiceLineDialog = new AddInvoiceLineDialog(salesInvoiceGeneratorFrame);
         invoiceLineDialog.setVisible(true);
     }
 
