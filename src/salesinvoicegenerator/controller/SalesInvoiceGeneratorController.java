@@ -64,11 +64,11 @@ public class SalesInvoiceGeneratorController implements ActionListener, ListSele
                 deleteInvoice();
                 break;
 
-            case "Save":
+            case "Create Item":
                 save();
                 break;
 
-            case "Cancel":
+            case "Delete Item":
                 cancel();
                 break;
 

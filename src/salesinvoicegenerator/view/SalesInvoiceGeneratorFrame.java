@@ -102,14 +102,14 @@ public class SalesInvoiceGeneratorFrame extends javax.swing.JFrame {
         ));
         jScrollPane2.setViewportView(ivoiceLinesTable);
 
-        saveChangesButton.setText("Save");
+        saveChangesButton.setText("Create Item");
         saveChangesButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveChangesButtonActionPerformed(evt);
             }
         });
 
-        cancelChangesButton.setText("Cancel");
+        cancelChangesButton.setText("Delete Item");
 
         jMenu1.setText("File");
 
@@ -204,6 +204,8 @@ public class SalesInvoiceGeneratorFrame extends javax.swing.JFrame {
                     .addComponent(cancelChangesButton))
                 .addGap(25, 25, 25))
         );
+
+        cancelChangesButton.getAccessibleContext().setAccessibleDescription("");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
